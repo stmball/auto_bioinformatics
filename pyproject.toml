@@ -5,7 +5,7 @@ description = "Template for Python packages"
 authors = ["Samuel Ball <me@stmball.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "auto-bioinformatics"}]
+packages = [{include = "auto-bioinformatics", from="src"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
