@@ -161,13 +161,16 @@ class ProjectionPlot:
         points: npt.NDArray,
         projection: reducers.Reducer,
         output_file: tp.Optional[Path] = None,
-        colors: tp.Union[tp.List[int], str] = "black",
+        cols: tp.Optional[tp.List[str]] = None,
+        groups: tp.Optional[tp.List[str]] = None,
+
     ) -> None:
         """Initialize a ProjectionPlot object."""
         self.points = points
         self.projection = projection
         self.output_file = output_file
-        self.colors = colors
+        self.cols = cols
+        self.groups = groups
 
     def plot(self):
         """Plot the projection."""
@@ -176,12 +179,24 @@ class ProjectionPlot:
 
         # Plot the points
 
-        ax.scatter(self.points[:, 0], self.points[:, 1], c=self.colors)
+        if self.groups:
+            for group in self.groups:
+                
+                rows = [i for i, x in enumerate(self.cols) if group in x]
+
+                print(self.points[rows, 0])
+                print(self.points[rows, 1])
+                ax.scatter(self.points[rows, 0], self.points[rows, 1], label=group)
+        else:
+            ax.scatter(self.points[:, 0], self.points[:, 1], c="black")
 
         # Add axis labels and title
         ax.set_xlabel("Dimension 1")
         ax.set_ylabel("Dimension 2")
         ax.set_title(f"{self.projection} Projection")
+
+        if self.groups:
+            ax.legend()
 
         plt.tight_layout()
 

@@ -173,7 +173,6 @@ class AutoAnalysis:
 
         pca_data = dim_reducer.fit_transform(data)
 
-        colours = self._get_group_colours(data_cols)
 
         if plot:
             self.dim_reducer_plot_path = self.plot_dir / output_file
@@ -181,7 +180,8 @@ class AutoAnalysis:
                 pca_data,
                 dim_reducer,
                 self.dim_reducer_plot_path,
-                colours
+                data_cols,
+                self.groups
             ).plot()
 
         return pca_data
@@ -356,19 +356,3 @@ class AutoAnalysis:
         self.data[self.gene_name_col] = (
             self.data[self.gene_name_col].str.split(";").str[0]
         )
-
-    def _get_group_colours(self, data_cols = tp.List[str]) -> tp.List[int]:
-
-        self.groups 
-        
-        colours = []
-
-        for data_col in data_cols:
-
-            for i, group in enumerate(self.groups):
-
-                if group in data_col:
-                    colours.append(i)
-
-
-        return colours
