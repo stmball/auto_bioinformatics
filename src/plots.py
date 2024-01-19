@@ -161,11 +161,13 @@ class ProjectionPlot:
         points: npt.NDArray,
         projection: reducers.Reducer,
         output_file: tp.Optional[Path] = None,
+        colors: tp.Union[tp.List[int], str] = "black",
     ) -> None:
         """Initialize a ProjectionPlot object."""
         self.points = points
         self.projection = projection
         self.output_file = output_file
+        self.colors = colors
 
     def plot(self):
         """Plot the projection."""
@@ -173,7 +175,8 @@ class ProjectionPlot:
         fig, ax = plt.subplots(figsize=(10, 10))
 
         # Plot the points
-        ax.scatter(self.points[:, 0], self.points[:, 1], s=1, c="black")
+
+        ax.scatter(self.points[:, 0], self.points[:, 1], c=self.colors)
 
         # Add axis labels and title
         ax.set_xlabel("Dimension 1")

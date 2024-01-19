@@ -1,9 +1,9 @@
 """Full analysis pipeline for AutoBioinformatics."""
 
 import typing as tp
+from collections import defaultdict
 from itertools import combinations
 from pathlib import Path
-from collections import defaultdict
 
 import gseapy as gp
 import numpy as np
@@ -173,12 +173,15 @@ class AutoAnalysis:
 
         pca_data = dim_reducer.fit_transform(data)
 
+        colours = self._get_group_colours(data_cols)
+
         if plot:
             self.dim_reducer_plot_path = self.plot_dir / output_file
             plots.ProjectionPlot(
                 pca_data,
                 dim_reducer,
                 self.dim_reducer_plot_path,
+                colours
             ).plot()
 
         return pca_data
@@ -353,3 +356,19 @@ class AutoAnalysis:
         self.data[self.gene_name_col] = (
             self.data[self.gene_name_col].str.split(";").str[0]
         )
+
+    def _get_group_colours(self, data_cols = tp.List[str]) -> tp.List[int]:
+
+        self.groups 
+        
+        colours = []
+
+        for data_col in data_cols:
+
+            for i, group in enumerate(self.groups):
+
+                if group in data_col:
+                    colours.append(i)
+
+
+        return colours

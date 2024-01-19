@@ -21,6 +21,7 @@ openpyxl = "^3.1.2"
 [tool.poetry.group.dev.dependencies]
 pylint = "^3.0.3"
 toml = "^0.10.2"
+pytest = "^7.4.4"
 
 [build-system]
 requires = ["poetry-core"]
