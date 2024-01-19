@@ -72,6 +72,7 @@ class KNN_Imputer(Imputer):
 
     def fit(self, data: tp.Any) -> None:
         """Fit the imputer to the data."""
+
         clean_data = data.replace(0, np.nan)
         clean_data = clean_data.dropna(thresh=self.sample_threshold * data.shape[1])
         self.imputer = KNNImputer()

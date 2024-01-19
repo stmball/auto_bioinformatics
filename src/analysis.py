@@ -208,21 +208,22 @@ class AutoAnalysis:
                 output_path,
             )
 
-            fig_path = self.plot_dir / (
-                "_".join([group1_name, group2_name]) + "_pathways.png"
-            )
+            if sig_genes:
+                fig_path = self.plot_dir / (
+                    "_".join([group1_name, group2_name]) + "_pathways.png"
+                )
 
-            self.de_paths[f"{group1_name}_{group2_name}"]["pathway_fig"] = fig_path
+                self.de_paths[f"{group1_name}_{group2_name}"]["pathway_fig"] = fig_path
 
-            output_path = self.output_dir / (
-                "_".join([group1_name, group2_name]) + "_pathways.xlsx"
-            )
+                output_path = self.output_dir / (
+                    "_".join([group1_name, group2_name]) + "_pathways.xlsx"
+                )
 
-            self._run_pathway_analysis(
-                sig_genes,
-                fig_path,
-                output_path,
-            )
+                self._run_pathway_analysis(
+                    sig_genes,
+                    fig_path,
+                    output_path,
+                )
 
     def _run_single_de_anaylsis(
         self, group1_name: str, group2_name: str, fig_path: Path, output_path: Path
@@ -289,6 +290,8 @@ class AutoAnalysis:
             figure_path (Path): Path for figure to go into
             output_path (Path): Path for output excel file to go into
         """
+
+        print(significant_genes)
         enriched = gp.enrichr(
             gene_list=significant_genes,
             organism=self.organism,

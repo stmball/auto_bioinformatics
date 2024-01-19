@@ -115,7 +115,7 @@ class ImputationPlot:
     def plot(self):
         """Plot the imputation plot."""
         # Get the number of samples in the data
-        n_samples = max(self.pre_imputed_data.shape[1], 4)
+        n_samples = min(self.pre_imputed_data.shape[1], 4)
         
 
         # Create a figure with a subplot for each sample
@@ -184,8 +184,6 @@ class ProjectionPlot:
                 
                 rows = [i for i, x in enumerate(self.cols) if group in x]
 
-                print(self.points[rows, 0])
-                print(self.points[rows, 1])
                 ax.scatter(self.points[rows, 0], self.points[rows, 1], label=group)
         else:
             ax.scatter(self.points[:, 0], self.points[:, 1], c="black")
