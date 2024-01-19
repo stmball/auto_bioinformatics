@@ -52,7 +52,7 @@ class VolcanoPlot:
 
         fig, ax = plt.subplots(figsize=(10, 10))
 
-        ax.scatter(self.log_fold_changes, -np.log10(self.p_values), s=1, c="black")
+        ax.scatter(self.log_fold_changes, -np.log10(self.p_values), c=-np.log10(self.p_values))
 
         # Add labels for significant points
         texts = []
@@ -71,7 +71,6 @@ class VolcanoPlot:
         # Add axis labels and title
         ax.set_xlabel("Log Fold Change")
         ax.set_ylabel("-log10(p-value)")
-        ax.set_title("Volcano Plot")
 
         # Set the x-axis to be symmetrical around 0
         ax.set_xlim(-max(abs(self.log_fold_changes)), max(abs(self.log_fold_changes)))
@@ -84,6 +83,10 @@ class VolcanoPlot:
 
         ax.axvline(self.log_fold_change_threshold, c="red", ls="--", lw=1)
         ax.axvline(-self.log_fold_change_threshold, c="red", ls="--", lw=1)
+
+        # Remove the top and right spines
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
 
         plt.tight_layout()
 
@@ -112,10 +115,11 @@ class ImputationPlot:
     def plot(self):
         """Plot the imputation plot."""
         # Get the number of samples in the data
-        n_samples = self.pre_imputed_data.shape[1]
+        n_samples = max(self.pre_imputed_data.shape[1], 4)
+        
 
         # Create a figure with a subplot for each sample
-        fig, axes = plt.subplots(n_samples, 2, figsize=(10, 4 * n_samples))
+        fig, axes = plt.subplots(n_samples, 2, figsize=(10, 3 * n_samples))
 
         # Plot the pre-imputed data
         for i in range(n_samples):

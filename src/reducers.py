@@ -33,6 +33,10 @@ class Reducer(ABC):
         self.fit(data)
         return self.transform(data)
 
+    def __str__(self) -> str:
+        """Generate a string representation of the reducer."""
+        return ""
+
 
 class PCA(Reducer):
     """Principal component analysis (PCA) reducer."""

@@ -1,7 +1,7 @@
 """Automatic generation of reports for automatic analysis."""
 
-from pathlib import Path
 from itertools import combinations
+from pathlib import Path
 
 import docx
 
@@ -163,7 +163,7 @@ class Reporter:
                 )
 
             self.report.add_paragraph(
-                f"Pathway analysis was performed on the differentially expressed genes, using the {self.analysis.gene_sets} database(s) for {self.analysis.organism}."
+                f"Pathway analysis was performed on the differentially expressed genes, using the {', '.join(self.analysis.gene_sets)} database(s) for the {self.analysis.organism} organism."
             )
 
             if self.analysis.de_paths is not None:

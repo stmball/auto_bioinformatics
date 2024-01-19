@@ -129,6 +129,6 @@ dmypy.json
 .pyre/
 
 test_files/
-test_it_out.py
+check_it_out.py
 img/
 out/
