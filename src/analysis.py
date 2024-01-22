@@ -71,6 +71,8 @@ class AutoAnalysis:
         self.normaliser: tp.Optional[normalisers.Normaliser] = None
         self.de_paths: tp.Optional[tp.Dict[str, tp.Dict]] = None
 
+        print(self.de_paths)
+
     def run(self):
         """Run the full analysis pipeline."""
         self._check_dirs_exist()
@@ -219,11 +221,18 @@ class AutoAnalysis:
                     "_".join([group1_name, group2_name]) + "_pathways.xlsx"
                 )
 
-                self._run_pathway_analysis(
+                could_plot = self._run_pathway_analysis(
                     sig_genes,
                     fig_path,
                     output_path,
                 )
+                
+                if not could_plot:
+                    self.de_paths[f"{group1_name}_{group2_name}"]["pathway_fig"] = None
+
+
+            else :
+                self.de_paths[f"{group1_name}_{group2_name}"]["pathway_fig"] = None
 
     def _run_single_de_anaylsis(
         self, group1_name: str, group2_name: str, fig_path: Path, output_path: Path
@@ -282,7 +291,7 @@ class AutoAnalysis:
         significant_genes: tp.List[str],
         figure_path: Path,
         output_path: Path,
-    ):
+    ) -> bool:
         """Run pathway analysis for a list of significant genes.
 
         Args:
@@ -291,7 +300,6 @@ class AutoAnalysis:
             output_path (Path): Path for output excel file to go into
         """
 
-        print(significant_genes)
         enriched = gp.enrichr(
             gene_list=significant_genes,
             organism=self.organism,
@@ -308,9 +316,10 @@ class AutoAnalysis:
                 color={a: b for a, b in zip(self.gene_sets, ["red", "blue"])},
                 ofname=figure_path,
             ).plot()
+            return True
         except:
             print("Could not plot pathway bar plot.")
-            pass
+            return False
 
     def _get_group_cols(self, group_name: tp.Union[tp.List[str], str]) -> tp.List[str]:
         """Get the columns for a group.

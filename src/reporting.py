@@ -156,18 +156,24 @@ class Reporter:
                 f"A volcano plot was generated for the comparison between {group_a} and {group_b}. Genes that were found to be differentially expressed are labelled."
             )
 
-            if self.analysis.de_paths is not None:
-                self.report.add_picture(
-                    str(self.analysis.de_paths[f"{group_a}_{group_b}"]["volcano_fig"]),
-                    width=docx.shared.Inches(6),
-                )
-
-            self.report.add_paragraph(
-                f"Pathway analysis was performed on the differentially expressed genes, using the {', '.join(self.analysis.gene_sets)} database(s) for the {self.analysis.organism} organism."
+            self.report.add_picture(
+                str(self.analysis.de_paths[f"{group_a}_{group_b}"]["volcano_fig"]),
+                width=docx.shared.Inches(6),
             )
 
-            if self.analysis.de_paths is not None:
+
+            if self.analysis.de_paths[f"{group_a}_{group_b}"]["pathway_fig"]:
+                self.report.add_paragraph(
+                    f"Pathway analysis was performed on the differentially expressed genes, using the {', '.join(self.analysis.gene_sets)} database(s) for the {self.analysis.organism} organism."
+                )
+
                 self.report.add_picture(
                     str(self.analysis.de_paths[f"{group_a}_{group_b}"]["pathway_fig"]),
                     width=docx.shared.Inches(6),
+                )
+
+            else:
+
+                self.report.add_paragraph(
+                    f"No significant pathways were found for the differentially expressed genes between {group_a} and {group_b}."
                 )
