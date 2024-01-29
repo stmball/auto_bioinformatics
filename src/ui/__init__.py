@@ -1,0 +1,1 @@
+"""Submodule for building the UI of the application."""
