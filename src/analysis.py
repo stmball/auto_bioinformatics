@@ -2,6 +2,7 @@
 
 import typing as tp
 from collections import defaultdict
+from dataclasses import dataclass
 from itertools import combinations
 from pathlib import Path
 
@@ -17,6 +18,25 @@ import src.normalisers as normalisers
 import src.plots as plots
 import src.reducers as reducers
 import src.scalers as scalers
+from src.errors import AnalysisError
+
+
+@dataclass
+class AutoAnalysisConfig:
+    """Configuration class for options for the AutoAnalysis class."""
+
+    groups: tp.List[str]
+    gene_name_col: str = "Gene"
+    p_value_threshold: float = 0.05
+    log_fold_change_threshold: float = 1
+    gene_sets: tp.List[str] = ["KEGG_2019_Human", "MSigDB_Hallmark_2020"]
+    organism: str = "Human"
+    plot_dir: Path = Path("img")
+    output_dir: Path = Path("out")
+    scaler: tp.Optional[scalers.Scaler] = scalers.Log2Scaler()
+    imputer: tp.Optional[imputers.Imputer] = imputers.KNN_Imputer()
+    reducer: tp.Optional[reducers.Reducer] = reducers.PCA()
+    normaliser: tp.Optional[normalisers.Normaliser] = normalisers.PowerScaler()
 
 
 class AutoAnalysis:
@@ -30,14 +50,7 @@ class AutoAnalysis:
     def __init__(
         self,
         data: pd.DataFrame,
-        groups: tp.List[str],
-        gene_name_col: str = "Gene",
-        p_value_threshold: float = 0.05,
-        log_fold_change_threshold: float = 1,
-        gene_sets: tp.List[str] = ["KEGG_2019_Human", "MSigDB_Hallmark_2020"],
-        organism: str = "Human",
-        plot_dir: Path = Path("img"),
-        output_dir: Path = Path("out"),
+        config: AutoAnalysisConfig,
     ) -> None:
         """Initialise an AutoAnalysis object.
 
@@ -52,26 +65,26 @@ class AutoAnalysis:
             output_dir (Path, optional): Directory for output excel files to go. Defaults to Path("out").
         """
         self.data = data
-        self.groups = groups
-        self.gene_name_col = gene_name_col
+        self.groups = config.groups
+        self.gene_name_col = config.gene_name_col
 
         self.missing_data_percentage = self._calculate_missing_data()
 
-        self.p_value_threshold = p_value_threshold
-        self.log_fold_change_threshold = log_fold_change_threshold
+        self.p_value_threshold = config.p_value_threshold
+        self.log_fold_change_threshold = config.log_fold_change_threshold
 
-        self.gene_sets = gene_sets
-        self.organism = organism
+        self.gene_sets = config.gene_sets
+        self.organism = config.organism
 
-        self.plot_dir = plot_dir
-        self.output_dir = output_dir
+        self.plot_dir = config.plot_dir
+        self.output_dir = config.output_dir
 
-        self.imputer: tp.Optional[imputers.Imputer] = None
-        self.reducer: tp.Optional[reducers.Reducer] = None
-        self.normaliser: tp.Optional[normalisers.Normaliser] = None
+        self.scaler = config.scaler
+        self.imputer = config.imputer
+        self.reducer = config.reducer
+        self.normaliser = config.normaliser
+
         self.de_paths: tp.Optional[tp.Dict[str, tp.Dict]] = None
-
-        print(self.de_paths)
 
     def run(self):
         """Run the full analysis pipeline."""
@@ -91,7 +104,7 @@ class AutoAnalysis:
 
         self._run_all_de_analysis()
 
-    def _scale_data(self, scaler: scalers.Scaler = scalers.Log2Scaler()) -> None:
+    def _scale_data(self) -> None:
         """Scale the data using a scaler object.
 
         Args:
@@ -101,13 +114,14 @@ class AutoAnalysis:
 
         data = self.data.loc[:, data_cols]
 
-        self.scaler = scaler
+        if self.scaler:
+            self.data.loc[:, data_cols] = self.scaler.fit_transform(data)
 
-        self.data.loc[:, data_cols] = scaler.fit_transform(data)
+        else:
+            raise AnalysisError("No scaler provided.")
 
     def _impute_data(
         self,
-        imputer: imputers.Imputer = imputers.KNN_Imputer(),
         plot: bool = True,
         output_file: Path = Path("imputation.png"),
     ) -> None:
@@ -118,7 +132,6 @@ class AutoAnalysis:
             plot (bool, optional): Whether or not to plot the imputation plot. Defaults to True.
             output_file (Path, optional): File to save imputation plot to. Defaults to "imputation.png".
         """
-        self.imputer = imputer
 
         for group in tqdm(self.groups, desc="Imputing data..."):
             data_cols = self._get_group_cols(group)
@@ -130,16 +143,16 @@ class AutoAnalysis:
                 self.imputation_plot_path = self.plot_dir / (
                     output_file.stem + f"_{group}" + output_file.suffix
                 )
-                new_data = imputer.fit_transform(data)
+                new_data = self.imputer.fit_transform(data)
                 plots.ImputationPlot(
                     data,
                     new_data,
                     self.imputation_plot_path,
                 ).plot()
-                self.data.loc[:, data_cols] = imputer.fit_transform(data)
+                self.data.loc[:, data_cols] = self.imputer.fit_transform(data)
 
     def _normalise_data(
-        self, normaliser: normalisers.Normaliser = normalisers.PowerScaler()
+        self
     ) -> None:
         """Normalise the data using a normaliser object.
 
@@ -150,13 +163,10 @@ class AutoAnalysis:
 
         data = self.data.loc[:, data_cols]
 
-        self.normaliser = normaliser
-
-        self.data.loc[:, data_cols] = normaliser.fit_transform(data)
+        self.data.loc[:, data_cols] = self.normaliser.fit_transform(data)
 
     def _run_pca(
         self,
-        dim_reducer: reducers.Reducer = reducers.PCA(),
         plot: bool = True,
         output_file: Path = Path("pca.png"),
     ) -> npt.NDArray:
@@ -171,16 +181,14 @@ class AutoAnalysis:
 
         data = self.data.loc[:, data_cols].dropna()
 
-        self.reducer = dim_reducer
-
-        pca_data = dim_reducer.fit_transform(data)
+        pca_data = self.dim_reducer.fit_transform(data)
 
 
         if plot:
             self.dim_reducer_plot_path = self.plot_dir / output_file
             plots.ProjectionPlot(
                 pca_data,
-                dim_reducer,
+                self.dim_reducer,
                 self.dim_reducer_plot_path,
                 data_cols,
                 self.groups

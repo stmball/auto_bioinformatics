@@ -13,6 +13,7 @@ import pandas as pd
 from sklearn.impute import KNNImputer, SimpleImputer
 
 
+
 class Imputer(ABC):
     """Abstract base class for imputers."""
 
@@ -95,3 +96,9 @@ class KNN_Imputer(Imputer):
     def __str__(self) -> str:
         """Generate a string representation of the imputer."""
         return super().__str__() + "KNN Imputation"
+
+
+REGISTERED_IMPUTERS = [
+    MeanImputer,
+    KNN_Imputer,
+    ]

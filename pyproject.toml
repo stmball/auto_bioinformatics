@@ -16,6 +16,7 @@ umap-learn = "^0.5.5"
 adjusttext = "^1.0.4"
 python-docx = "^1.1.0"
 openpyxl = "^3.1.2"
+flask = "^3.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

@@ -11,3 +11,8 @@ class PlottingError(AutoBioinformaticsError):
     """Exception raised for errors in the plotting module."""
 
     pass
+
+class AnalysisError(AutoBioinformaticsError):
+    """Exception raised for errors in the analysis module."""
+
+    pass    
