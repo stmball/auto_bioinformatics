@@ -2,6 +2,7 @@
 
 from itertools import combinations
 from pathlib import Path
+import typing as tp
 
 import docx
 
@@ -15,7 +16,7 @@ class Reporter:
         self,
         analysis: AutoAnalysis,
         name: str = "Unnamed Report",
-        output_path: Path = Path("out/report.docx"),
+        output_path: tp.Optional[Path] = Path("out/report.docx"),
     ) -> None:
         """Initialise a Reporter object.
 
@@ -50,9 +51,10 @@ class Reporter:
             self._generate_differential_expression_description()
 
         # Make sure the output directory exists
-        self.output_path.parent.mkdir(parents=True, exist_ok=True)
+        if self.output_path:
+            self.output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        self.report.save(self.output_path)
+            self.report.save(self.output_path)
 
     def _generate_premable(self) -> None:
         self.report.add_heading("About This Document", level=1)
@@ -161,7 +163,6 @@ class Reporter:
                 width=docx.shared.Inches(6),
             )
 
-
             if self.analysis.de_paths[f"{group_a}_{group_b}"]["pathway_fig"]:
                 self.report.add_paragraph(
                     f"Pathway analysis was performed on the differentially expressed genes, using the {', '.join(self.analysis.gene_sets)} database(s) for the {self.analysis.organism} organism."
@@ -173,7 +174,6 @@ class Reporter:
                 )
 
             else:
-
                 self.report.add_paragraph(
                     f"No significant pathways were found for the differentially expressed genes between {group_a} and {group_b}."
                 )
