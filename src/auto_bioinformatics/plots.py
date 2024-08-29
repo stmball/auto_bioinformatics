@@ -1,4 +1,5 @@
 """Plots for visualizing differential expression analysis results."""
+
 import typing as tp
 from pathlib import Path
 
@@ -9,8 +10,8 @@ import numpy.typing as npt
 import pandas as pd
 from adjustText import adjust_text
 
-import src.reducers as reducers
-from src.errors import PlottingError
+import auto_bioinformatics.reducers as reducers
+from auto_bioinformatics.errors import PlottingError
 
 
 class VolcanoPlot:
@@ -52,7 +53,9 @@ class VolcanoPlot:
 
         fig, ax = plt.subplots(figsize=(10, 10))
 
-        ax.scatter(self.log_fold_changes, -np.log10(self.p_values), c=-np.log10(self.p_values))
+        ax.scatter(
+            self.log_fold_changes, -np.log10(self.p_values), c=-np.log10(self.p_values)
+        )
 
         # Add labels for significant points
         texts = []
@@ -116,14 +119,12 @@ class ImputationPlot:
         """Plot the imputation plot."""
         # Get the number of samples in the data
         n_samples = min(self.pre_imputed_data.shape[1], 4)
-        
 
         # Create a figure with a subplot for each sample
         fig, axes = plt.subplots(n_samples, 2, figsize=(10, 3 * n_samples))
 
         # Plot the pre-imputed data
         for i in range(n_samples):
-
             filtered_pre = self.pre_imputed_data.iloc[:, i][
                 self.pre_imputed_data.iloc[:, i] != 0
             ]
@@ -163,7 +164,6 @@ class ProjectionPlot:
         output_file: tp.Optional[Path] = None,
         cols: tp.Optional[tp.List[str]] = None,
         groups: tp.Optional[tp.List[str]] = None,
-
     ) -> None:
         """Initialize a ProjectionPlot object."""
         self.points = points
@@ -181,7 +181,6 @@ class ProjectionPlot:
 
         if self.groups:
             for group in self.groups:
-                
                 rows = [i for i, x in enumerate(self.cols) if group in x]
 
                 ax.scatter(self.points[rows, 0], self.points[rows, 1], label=group)

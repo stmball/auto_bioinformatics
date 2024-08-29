@@ -2,21 +2,21 @@
 
 import typing as tp
 from collections import defaultdict
-from itertools import combinations
+from itertools import permutations
 from pathlib import Path
 
 import gseapy as gp
-import numpy as np
 import numpy.typing as npt
+import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.stats import ttest_ind
 from tqdm import tqdm
 
-import src.imputers as imputers
-import src.normalisers as normalisers
-import src.plots as plots
-import src.reducers as reducers
-import src.scalers as scalers
+import auto_bioinformatics.imputers as imputers
+import auto_bioinformatics.normalisers as normalisers
+import auto_bioinformatics.plots as plots
+import auto_bioinformatics.reducers as reducers
+import auto_bioinformatics.scalers as scalers
 
 
 class AutoAnalysis:
@@ -70,8 +70,6 @@ class AutoAnalysis:
         self.reducer: tp.Optional[reducers.Reducer] = None
         self.normaliser: tp.Optional[normalisers.Normaliser] = None
         self.de_paths: tp.Optional[tp.Dict[str, tp.Dict]] = None
-
-        print(self.de_paths)
 
     def run(self):
         """Run the full analysis pipeline."""
@@ -175,7 +173,6 @@ class AutoAnalysis:
 
         pca_data = dim_reducer.fit_transform(data)
 
-
         if plot:
             self.dim_reducer_plot_path = self.plot_dir / output_file
             plots.ProjectionPlot(
@@ -183,16 +180,17 @@ class AutoAnalysis:
                 dim_reducer,
                 self.dim_reducer_plot_path,
                 data_cols,
-                self.groups
+                self.groups,
             ).plot()
 
         return pca_data
 
     def _run_all_de_analysis(self) -> None:
-        """Run differential expression analysis for all combinations of groups."""
+        """Run differential expression analysis for all permutations of groups."""
         self.de_paths = defaultdict(dict)
 
-        for group1_name, group2_name in combinations(self.groups, 2):
+        for group1_name, group2_name in tqdm(permutations(self.groups, 2)):
+            plt.close("all")
             fig_path = self.plot_dir / (
                 "_".join([group1_name, group2_name]) + "_volcano.png"
             )
@@ -226,12 +224,11 @@ class AutoAnalysis:
                     fig_path,
                     output_path,
                 )
-                
+
                 if not could_plot:
                     self.de_paths[f"{group1_name}_{group2_name}"]["pathway_fig"] = None
 
-
-            else :
+            else:
                 self.de_paths[f"{group1_name}_{group2_name}"]["pathway_fig"] = None
 
     def _run_single_de_anaylsis(
@@ -258,7 +255,7 @@ class AutoAnalysis:
         group_1_mean = self.data.loc[:, group_1_cols].mean(axis=1)
         group_2_mean = self.data.loc[:, group_2_cols].mean(axis=1)
 
-        grouped_data["log_fold_change"] = group_2_mean - group_1_mean
+        grouped_data["log_fold_change"] = group_1_mean - group_2_mean
 
         grouped_data["p_value"] = ttest_ind(
             self.data[group_1_cols], self.data[group_2_cols], axis=1
@@ -368,3 +365,21 @@ class AutoAnalysis:
         self.data[self.gene_name_col] = (
             self.data[self.gene_name_col].str.split(";").str[0]
         )
+
+    @staticmethod
+    def load_data(data_path: Path) -> pd.DataFrame:
+        """Try and load data from a path accounting for different file types.
+        Args:
+            data_path (Path): Path to data file.
+        Returns:
+            pd.DataFrame: Data loaded from path.
+        """
+
+        if data_path.suffix == ".xlsx":
+            return pd.read_excel(data_path)
+        elif data_path.suffix == ".csv":
+            return pd.read_csv(data_path)
+        elif data_path.suffix == ".tsv":
+            return pd.read_csv(data_path, sep="\t")
+        else:
+            raise ValueError(f"File type {data_path.suffix} not supported.")

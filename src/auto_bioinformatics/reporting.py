@@ -1,11 +1,11 @@
 """Automatic generation of reports for automatic analysis."""
 
-from itertools import combinations
+from itertools import permutations
 from pathlib import Path
 
 import docx
 
-from src.analysis import AutoAnalysis
+from auto_bioinformatics.analysis import AutoAnalysis
 
 
 class Reporter:
@@ -147,7 +147,7 @@ class Reporter:
             f"Below we will go through each pair of groups and discuss the differentially expressed genes."
         )
 
-        for group_a, group_b in combinations(self.analysis.groups, 2):
+        for group_a, group_b in permutations(self.analysis.groups, 2):
             self.report.add_heading(
                 f"Differential Expression Between {group_a} and {group_b}", level=2
             )
@@ -161,7 +161,6 @@ class Reporter:
                 width=docx.shared.Inches(6),
             )
 
-
             if self.analysis.de_paths[f"{group_a}_{group_b}"]["pathway_fig"]:
                 self.report.add_paragraph(
                     f"Pathway analysis was performed on the differentially expressed genes, using the {', '.join(self.analysis.gene_sets)} database(s) for the {self.analysis.organism} organism."
@@ -173,7 +172,6 @@ class Reporter:
                 )
 
             else:
-
                 self.report.add_paragraph(
                     f"No significant pathways were found for the differentially expressed genes between {group_a} and {group_b}."
                 )

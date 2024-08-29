@@ -5,7 +5,6 @@ This module contains functions for dimensionality reduction.
 
 import typing as tp
 from abc import ABC, abstractmethod
-from pathlib import Path
 
 from sklearn import decomposition
 
